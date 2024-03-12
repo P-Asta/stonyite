@@ -1,6 +1,12 @@
-use clap::builder::Str;
+use crate::{config, install};
+#[derive(PartialEq, Eq)]
+pub enum DotfileConfig {
+    JustInstall,
+    JustConfig,
+    None,
+}
 
-pub fn read_dotfile(manager: String) {
+pub fn read_dotfile(manager: String, flag: Option<String>, type_: DotfileConfig) {
     let manager = manager.replace("nix-env", "nix");
     let entries = std::fs::read_dir(".").unwrap();
     for entry in entries {
@@ -19,6 +25,9 @@ pub fn read_dotfile(manager: String) {
         {
             // 디펜던시 확인후 설치
             "./dependencies" => {
+                if type_ == DotfileConfig::JustConfig {
+                    continue;
+                }
                 let dependencies = std::fs::read_to_string(format!("./dependencies-{manager}"));
                 // 디펜전시 파일이 없으면 오류를 출력후 멈춤
                 if dependencies.is_err() {
@@ -26,36 +35,19 @@ pub fn read_dotfile(manager: String) {
                     return;
                 }
                 let dependencies = dependencies.unwrap();
-                for dependency in dependencies.trim().split("\n") {
-                    log::info!("installing: {dependency}");
-                    match manager.as_str() {
-                        "nix" => {
-                            std::process::Command::new("nix-env")
-                                .arg("-iv")
-                                .arg(dependency)
-                                .status()
-                                .unwrap();
-                        }
-                        _ => {
-                            std::process::Command::new(manager.clone())
-                                .arg("install")
-                                .arg(dependency)
-                                .status()
-                                .unwrap();
-                        }
-                    }
-                }
+                install::install(dependencies, manager.clone(), flag.clone());
             }
             x @ ("./.git" | "./.ds_store" | "license" | "reademe.md") => {
                 log::info!("skipping: {}", x);
             }
             config_folder => {
-                std::process::Command::new("mv")
-                    .arg("-f")
-                    .arg(config_folder)
-                    .arg("~/.config/")
-                    .status()
-                    .unwrap();
+                if type_ == DotfileConfig::JustInstall {
+                    continue;
+                }
+                if config_folder.ends_with(".unused") {
+                    log::info!("skipping: {}", config_folder);
+                }
+                config::config(config_folder.to_string(), flag.clone());
             }
         }
     }

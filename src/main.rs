@@ -3,12 +3,17 @@ use std::process;
 use clap::{Args, Parser, Subcommand};
 mod dotfile;
 
+mod config;
+mod install;
+
 #[derive(Debug, Parser)]
 #[clap[author, version, about]]
 pub struct Arg {
     pub command: String,
     #[arg(short, long)]
     pub manager: Option<String>,
+    #[arg(short, long)]
+    pub flag: Option<String>,
 }
 
 fn main() {
@@ -23,14 +28,21 @@ fn main() {
     }
 
     match args.command.trim() {
-        "setup" => dotfile::read_dotfile(args.manager.unwrap()),
-        "test" => {
-            process::Command::new("brew")
-                .arg("install")
-                .arg("fastfetch")
-                .status()
-                .unwrap();
-        }
+        "setup" => dotfile::read_dotfile(
+            args.manager.unwrap(),
+            args.flag,
+            dotfile::DotfileConfig::None,
+        ),
+        "config" => dotfile::read_dotfile(
+            args.manager.unwrap(),
+            args.flag,
+            dotfile::DotfileConfig::JustConfig,
+        ),
+        "install" => dotfile::read_dotfile(
+            args.manager.unwrap(),
+            args.flag,
+            dotfile::DotfileConfig::JustInstall,
+        ),
         _ => {}
     }
 }
