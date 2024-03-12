@@ -11,6 +11,7 @@ cargo install --git https://github.com/5-23/stonyite
 
 - brew
 ```bash
+brew tap 5-23/stonyite
 brew install stonyite
 ```
 
