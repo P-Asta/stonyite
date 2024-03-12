@@ -37,15 +37,15 @@ pub fn read_dotfile(manager: String, flag: Option<String>, type_: DotfileConfig)
                 let dependencies = dependencies.unwrap();
                 install::install(dependencies, manager.clone(), flag.clone());
             }
-            x @ ("./.git" | "./.ds_store" | "license" | "reademe.md") => {
-                log::info!("skipping: {}", x);
+            x @ ("./.git" | "./.ds_store" | "license" | "readme.md") => {
+                log::info!(target: &x[2..], "skipping");
             }
             config_folder => {
                 if type_ == DotfileConfig::JustInstall {
                     continue;
                 }
                 if config_folder.ends_with(".unused") {
-                    log::info!("skipping: {}", config_folder);
+                    log::info!(target: &config_folder[2..], "skipping");
                 }
                 config::config(config_folder.to_string(), flag.clone());
             }
