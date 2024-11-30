@@ -47,7 +47,7 @@ stonyite flags
 
 ### manager
 set pakage manager
-> When you set up a package manager, it reads and installs dependencies-{manager}.(default: brew)
+> When you set up a package manager, it reads and installs `dependencies-{manager}`. (default: brew)
 
 ```bash
 stonyite setup --manager nix-env
